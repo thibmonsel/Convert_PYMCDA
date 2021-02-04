@@ -1,0 +1,3 @@
+[submodule "pymcda"]
+	path = pymcda
+	url = git@github.com:Mostah/pymcda.git
