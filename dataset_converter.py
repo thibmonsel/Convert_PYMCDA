@@ -121,7 +121,7 @@ class CppXmlDataGenerator :
         dataset = ET.Element('dataset')
 
         #giving datasetname
-        datasetname = ET.SubElement(dataset, 'datasetname')
+        datasetname = ET.SubElement(dataset, 'datasetName')
         datasetname.text = 'datasetNameTest'
         
         #giving number of criteria

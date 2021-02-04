@@ -86,8 +86,8 @@ class CppXmlModelGenerator :
         model = ET.Element('model')
 
         #giving modelname
-        modelname = ET.SubElement(model, 'modelname')
-        modelname.text = 'modelname'
+        modelname = ET.SubElement(model, 'modelName')
+        modelname.text = 'modelName'
         
         #giving number of criteria
         criteria = ET.SubElement(model, 'criteria')
