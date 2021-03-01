@@ -30,7 +30,10 @@ class CritWeightsXml :
         self.processed_data = processed_data
             
     def get_criteria_ids(self):
-        return re.findall(r"<criterionID>(.*?)</criterionID>", self.processed_data)
+        ids =  re.findall(r"<criterionID>(.*?)</criterionID>", self.processed_data)
+        if "".join(ids).isdigit() is True:
+            return ["crit"+str(i) for i in ids]
+        return ids
     
     def get_criteria_weight(self):
         return re.findall(r"<value><.*?>(.*?)<.*?></value>", self.processed_data)
@@ -51,7 +54,10 @@ class PerfTableXml :
 
     def get_criterion_id(self):
         data = re.findall(r"<alternativePerformances.*?>(.*?)</alternativePerformances>", self.processed_data)[0]
-        return re.findall(r"<criterionID>(.*?)</criterionID>", data)
+        ids = re.findall(r"<criterionID>(.*?)</criterionID>", data)
+        if "".join(ids).isdigit() is True:
+            return ["crit"+str(i) for i in ids]
+        return ids
     
     def get_performance_values(self):
         criteria = self.get_criterion_id()
@@ -105,7 +111,7 @@ class CppXmlModelGenerator :
             profile = ET.SubElement(model, 'profile')
             profile.text = str(key)
             for j in range(len(self.criteria)) : 
-                criterion = ET.SubElement(profile, "g" +str(self.criteria[j]))
+                criterion = ET.SubElement(profile, str(self.criteria[j]))
                 criterion.text = self.prof_table_data[key][str(self.criteria[j])]
             weight = ET.SubElement(model, 'weight')
             weight.text = str(self.criteria_weights[i])
@@ -115,5 +121,42 @@ class CppXmlModelGenerator :
         # # create a new XML file with the results
         mydata = ET.tostring(model,  xml_declaration=True)
         myfile = open(self.filepath, "wb")
+        myfile.write(mydata)
+        
+    def create_xml_mode_crit(self):
+        # create the file structure
+        model = ET.Element('model')
+
+        #giving modelname
+        modelname = ET.SubElement(model, 'modelName')
+        modelname.text = 'modelName'
+
+        #giving number of criteria
+        criteria = ET.SubElement(model, 'criteria')
+        criteria.text = str(len(self.criteria))
+
+        #giving number of categories
+        categories = ET.SubElement(model, 'categories')
+        categories.text = str(len(self.cat_prof_name))
+
+        #giving lambda
+        lbda = ET.SubElement(model, 'lambda')
+        lbda.text = str(self.lbd[0])
+        
+        for i, crit_id in enumerate(self.criteria) :
+            crit = ET.SubElement(model, str(crit_id))
+            for cat_profile_name in self.cat_prof_name : 
+                cat = ET.SubElement(crit, str(cat_profile_name))
+                cat.text = str(self.prof_table_data[cat_profile_name][crit_id])
+            weight = ET.SubElement(crit, 'weight')
+            weight.text = str(self.criteria_weights[i])
+            direction = ET.SubElement(crit, 'direction')
+            direction.text = "1" # default 
+ 
+        # create a new XML file with the results
+        mydata = ET.tostring(model,  xml_declaration=True)
+        new_path = self.filepath.split('.xml')[0] + "crit.xml"
+        print(new_path)
+        myfile = open(new_path, "wb")
         myfile.write(mydata)
                 

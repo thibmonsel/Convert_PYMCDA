@@ -22,7 +22,11 @@ class AssignXml :
         self.processed_data = processed_data
             
     def get_alternative_id(self):
-        return re.findall(r"<alternativeID>(.*?)</alternativeID>", self.processed_data)
+        alt_ids = re.findall(r"<alternativeID>(.*?)</alternativeID>", self.processed_data)
+        if "".join(alt_ids).isdigit():
+            return ["alt"+str(i) for i in alt_ids]
+        return alt_ids
+            
     
     def get_category_assignment(self):
         return re.findall(r"<categoryID>(.*?)</categoryID>", self.processed_data)
@@ -43,6 +47,8 @@ class CategoriesXml :
     def get_category_id(self):
         cat_id_data = ''.join(re.findall(r"(<categoryid=.*?>)", self.processed_data))
         cat_id_data = re.findall(r"\"(.*?)\"", cat_id_data)
+        if "".join(cat_id_data).isdigit():
+                return ["cat"+str(i) for i in cat_id_data]
         return cat_id_data
     
     def get_category_rank(self):
@@ -66,8 +72,12 @@ class CriteriaXml :
         self.processed_data = processed_data
 
     def get_criterion_id(self):
-        crit_data = ''.join(re.findall(r"(<criterionid=.*?>)", self.processed_data))
+        crit_data = ''.join(re.findall(r'(<criterionid=".*?")', self.processed_data))
         crit_data = re.findall(r"\"(.*?)\"", crit_data)
+        if "".join(crit_data).isdigit():
+                return ["crit"+str(i) for i in crit_data]
+        return crit_data
+            
         return crit_data
     
 class ParamXml :
@@ -85,11 +95,17 @@ class PerfTableXml :
       self.processed_data = processed_data
 
     def get_alternative_id(self):
-        return re.findall(r"<alternativeID>(.*?)</alternativeID>", self.processed_data)
+        tmp = re.findall(r"<alternativeID>(.*?)</alternativeID>", self.processed_data)
+        if "".join(tmp).isdigit() is True:
+            return ["alt"+str(i) for i in tmp]
+        return tmp
 
     def get_criterion_id(self):
-        data = re.findall(r"<alternativePerformances>(.*?)</alternativePerformances>", self.processed_data)[0]
-        return re.findall(r"<criterionID>(.*?)</criterionID>", data)
+        data = re.findall(r"<alternativePerformances.*?>(.*?)<.?alternativePerformances>", self.processed_data)[0]
+        crit_id =  re.findall(r"<criterionID>(.*?)</criterionID>", data)
+        if "".join(crit_id).isdigit() is True:
+            return ["crit"+str(i) for i in crit_id]
+        return crit_id
     
     def get_performance_values(self):
         criteria = self.get_criterion_id()
@@ -145,9 +161,10 @@ class CppXmlDataGenerator :
             assignment = ET.SubElement(alternative, 'assignment')
             
             if self.cat_assignment[key] not in self.dic_categories.values():
-                assignment.text = str(self.dic_categories[self.cat_assignment[key]])
+                # to change Olivier's ranking newRank = nbCat + 1 - oldRank since Olivier cat rank 0 is best opposite of ours
+                assignment.text = str(len(self.dic_categories) +1 - int(self.dic_categories[self.cat_assignment[key]]))
             else :
-                assignment.text = str(self.cat_assignment[key])
+                assignment.text = str(len(self.dic_categories) +1 - int(self.cat_assignment[key]))
 
         # # create a new XML file with the results
         mydata = ET.tostring(dataset,  xml_declaration=True)

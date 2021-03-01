@@ -1,14 +1,18 @@
-from get_data import XmlData
-from dataset_converter import *
-from model_converter import *
-import os
+
+
 
 if __name__ == '__main__':
+    from get_data import XmlData
+    from dataset_converter import AlternativeXml, AssignXml, CategoriesXml, CriteriaXml, ParamXml, PerfTableXml, CppXmlDataGenerator 
+    from model_converter import CatProfilesXml, CompatibleAltsXml, CritWeightsXml, LambdaXml, PerfTableXml, CppXmlModelGenerator
+    import os
+    
     data_path = "./pymcda/ws/LearnMRSortMeta/tests/"
     
     #for data
     for filename in os.listdir(data_path):
-        if filename.startswith("in") and filename != "in6":
+        if filename.startswith("in") and filename != "in6" :
+                        
             filepath = data_path + "/" +filename + "/alternatives.xml"
             filepath2 = data_path + "/" +filename + "/assign.xml"
             filepath3 = data_path + "/" +filename + "/categories.xml"
@@ -34,11 +38,12 @@ if __name__ == '__main__':
             crit = CriteriaXml(xml4.raw_data)
             criteria = crit.get_criterion_id()
             
+            from dataset_converter import PerfTableXml
             xml5 = XmlData(filepath5)
             xml5.parse_data()
             perf = PerfTableXml(xml5.raw_data)
             pert_table_data = perf.create_dic_values()
-            
+
             # print('filename : ', filename, '\n')
             # print("nb of alt : ", len(pert_table_data), '\n')
             # print("perftable", pert_table_data, '\n')
@@ -85,6 +90,14 @@ if __name__ == '__main__':
             prof = PerfTableXml(xml5.raw_data)
             prof_table_data = prof.create_dic_values()
             
+            print("filename :", filename)
+            print("prof_table", prof_table_data)
+            print("lmabda", ldba)
+            print("criteria", criteria)
+            print("criteria weigths", criteria_weights)
+            print("cat prof name", cat_prof_name, '\n\n')
+            
             #create xml files for c++
             gen = CppXmlModelGenerator(prof_table_data, ldba, criteria, criteria_weights ,cat_prof_name, "data/" + filename + 'model.xml')
             gen.create_xml()
+            gen.create_xml_mode_crit()
